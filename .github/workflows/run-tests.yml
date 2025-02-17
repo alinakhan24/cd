@@ -1,17 +1,39 @@
 name: Run Tests
 
 on: push
+
 jobs:
   run-tests:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+
       - name: Setup Python 3.11
         uses: actions/setup-python@v3
         with:
           python-version: "3.11.0"
+
       - name: Install Dependencies
         run: pip install -r requirements.txt
-      - name: Run tests
+
+      - name: Run Tests
         run: pytest
+
+  deploy:
+    needs: run-tests # Only runs if "run-tests" succeeds
+    runs-on: ubuntu-20.04
+    steps:
+      - name: SSH into VPS and Deploy
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd /root/farm-site  # Change to your project directory
+            git pull origin main  # Pull the latest code
+            source newenv/bin/activate  # Activate virtual environment
+            pip install -r requirements.txt  # Install dependencies
+            systemctl restart gunicorn  # Restart Gunicorn
+            systemctl restart nginx  # Restart Nginx (if needed)
