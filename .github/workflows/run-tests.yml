@@ -1,6 +1,6 @@
-name: Run Tests
+name: Run Tests and Deploy
 
-on: push
+on: push # Runs on every push
 
 jobs:
   run-tests:
@@ -12,27 +12,37 @@ jobs:
       - name: Setup Python 3.11
         uses: actions/setup-python@v3
         with:
-          python-version: "3.11.0"
+          python-version: "3.11"
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run Tests
+      - name: Run tests
         run: pytest
 
   deploy:
-    needs: run-tests # Only runs if "run-tests" succeeds
+    needs: run-tests # Run only if tests pass
     runs-on: ubuntu-20.04
     steps:
-      - name: SSH into VPS and Deploy
-        uses: appleboy/ssh-action@v0.1.7
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            cd /root/farm-site  # Change to your project directory
-            git pull origin main  # Pull the latest code
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Copy files to VPS using SCP
+        run: |
+          scp -r . root@${{ secrets.VPS_HOST }}:/root/farm-site
+
+      - name: Restart Gunicorn & Nginx
+        run: |
+          ssh root@${{ secrets.VPS_HOST }} << 'EOF'
+            cd /root/farm-site  # Go to project directory
             source newenv/bin/activate  # Activate virtual environment
             systemctl restart gunicorn  # Restart Gunicorn
-            systemctl restart nginx  # Restart Nginx (if needed)
+            systemctl restart nginx  # Restart Nginx
+          EOF
