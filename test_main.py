@@ -12,7 +12,7 @@ def test_index(client):
     """Test the '/' route"""
     response = client.get("/")
     assert response.status_code == 200
-    assert response.data == b"Hello, world! New"
+    assert response.data == b"Hello, world! New Again"
 
 def test_cow(client):
     """Test the '/cow' route"""
