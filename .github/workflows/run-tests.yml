@@ -36,7 +36,7 @@ jobs:
 
       - name: Copy files to VPS using SCP
         run: |
-          scp -r . root@${{ secrets.VPS_HOST }}:/root/farm-site
+          scp -r * root@${{ secrets.VPS_HOST }}:/root/farm-site
 
       - name: Restart Gunicorn & Nginx
         run: |
