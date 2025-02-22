@@ -33,7 +33,7 @@ github repo to Digital Ocean VPS using SCP.
 ...........................................................................................................
 3 Problems
 ..........................................................................................................
-A - Unable to install Gunicorn in Virtual Machine
+A - Unable to install Gunicorn in Virtual Machine.
 Error:  This environment is externally managed. 
 Solution: I used Virtual environments isolate your Python packages, ensuring they don’t interfere with
       system-level Python.
@@ -41,11 +41,11 @@ Solution: I used Virtual environments isolate your Python packages, ensuring the
      source ~/myenv/bin/activate
      pip install gunicorn --upgrade
 
-B- Running tests in Github Pipeline failing
+B- Running tests in Github Pipeline failing.
 Error:  Missing dependencies 
 Solution:  Including separate txt file in git repo, and configuring pipeline to install the dependencies, before building solution, has prevented pipeline to crash due to missing dependencies.
 
-C- Restarting Gunicorn cause No Gunicorn Service has been found
+C- Restarting Gunicorn cause No Gunicorn Service has been found.
 Solution:  This means that Gunicorn is not running as a systemd service (or it’s not set up 
 correctly). Creating a Gunicorn systemd service file, with relevant configuration, pointing the 
 server to correct working directory where the flask application has to be hosted, has resolved
